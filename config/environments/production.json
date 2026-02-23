@@ -1,0 +1,25 @@
+{
+  "name": "production",
+  "apiBaseUrl": "https://api.example.com/api",
+  "uiBaseUrl": "https://example.com",
+  "timeout": 60000,
+  "retries": 2,
+  "auth": {
+    "strategy": "bearer",
+    "tokenEndpoint": "/auth/login",
+    "credentials": {
+      "email": "monitor@example.com",
+      "password": "prod-readonly-password"
+    }
+  },
+  "headers": {
+    "Accept": "application/json",
+    "Content-Type": "application/json"
+  },
+  "features": {
+    "screenshots": true,
+    "video": "off",
+    "trace": "off",
+    "snapshots": false
+  }
+}

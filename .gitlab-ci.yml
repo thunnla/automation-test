@@ -1,0 +1,97 @@
+# ===========================================================
+# Universal Test Engine — GitLab CI Configuration
+# ===========================================================
+
+stages:
+  - validate
+  - test
+  - report
+
+variables:
+  NODE_VERSION: "20"
+  TEST_ENV: staging
+  npm_config_cache: "$CI_PROJECT_DIR/.npm"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .npm/
+    - node_modules/
+
+# -------------------------------------------------------
+# Validate schemas
+# -------------------------------------------------------
+validate-schemas:
+  stage: validate
+  image: node:${NODE_VERSION}
+  script:
+    - npm ci
+    - npx ts-node src/utils/schema-validator.ts
+
+# -------------------------------------------------------
+# API Tests
+# -------------------------------------------------------
+api-tests:
+  stage: test
+  image: mcr.microsoft.com/playwright:v1.45.0-jammy
+  needs: [validate-schemas]
+  script:
+    - npm ci
+    - npx playwright test --project=api
+  artifacts:
+    when: always
+    paths:
+      - reports/
+      - test-results/
+    expire_in: 7 days
+
+# -------------------------------------------------------
+# UI Tests
+# -------------------------------------------------------
+.ui-test-template: &ui_test
+  stage: test
+  image: mcr.microsoft.com/playwright:v1.45.0-jammy
+  needs: [validate-schemas]
+  artifacts:
+    when: always
+    paths:
+      - reports/
+      - test-results/
+    expire_in: 7 days
+
+ui-tests-chromium:
+  <<: *ui_test
+  script:
+    - npm ci
+    - npx playwright test --project=chromium
+
+ui-tests-firefox:
+  <<: *ui_test
+  script:
+    - npm ci
+    - npx playwright test --project=firefox
+
+ui-tests-webkit:
+  <<: *ui_test
+  script:
+    - npm ci
+    - npx playwright test --project=webkit
+
+# -------------------------------------------------------
+# Report
+# -------------------------------------------------------
+test-report:
+  stage: report
+  when: always
+  image: node:${NODE_VERSION}
+  needs:
+    - api-tests
+    - ui-tests-chromium
+    - ui-tests-firefox
+    - ui-tests-webkit
+  script:
+    - echo "Reports available as artifacts"
+  artifacts:
+    when: always
+    paths:
+      - reports/

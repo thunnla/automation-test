@@ -1,0 +1,25 @@
+{
+  "name": "dev",
+  "apiBaseUrl": "http://localhost:8000/api",
+  "uiBaseUrl": "http://localhost:3000",
+  "timeout": 30000,
+  "retries": 0,
+  "auth": {
+    "strategy": "bearer",
+    "tokenEndpoint": "/auth/login",
+    "credentials": {
+      "email": "admin@example.com",
+      "password": "password"
+    }
+  },
+  "headers": {
+    "Accept": "application/json",
+    "Content-Type": "application/json"
+  },
+  "features": {
+    "screenshots": true,
+    "video": "retain-on-failure",
+    "trace": "retain-on-failure",
+    "snapshots": true
+  }
+}

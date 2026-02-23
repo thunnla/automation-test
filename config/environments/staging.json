@@ -1,0 +1,25 @@
+{
+  "name": "staging",
+  "apiBaseUrl": "https://staging-api.example.com/api",
+  "uiBaseUrl": "https://staging.example.com",
+  "timeout": 45000,
+  "retries": 1,
+  "auth": {
+    "strategy": "bearer",
+    "tokenEndpoint": "/auth/login",
+    "credentials": {
+      "email": "qa@example.com",
+      "password": "staging-password"
+    }
+  },
+  "headers": {
+    "Accept": "application/json",
+    "Content-Type": "application/json"
+  },
+  "features": {
+    "screenshots": true,
+    "video": "retain-on-failure",
+    "trace": "retain-on-failure",
+    "snapshots": true
+  }
+}

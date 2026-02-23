@@ -1,0 +1,60 @@
+{
+  "suite": "Login Page — Authentication Flow",
+  "tags": ["smoke", "critical", "ui"],
+  "basePath": "",
+  "tests": [
+    {
+      "name": "Successful login with valid credentials",
+      "tags": ["smoke", "critical", "ui"],
+      "url": "/login",
+      "steps": [
+        { "action": "assertVisible", "selector": "input[name='email']", "description": "Email field is visible" },
+        { "action": "assertVisible", "selector": "input[name='password']", "description": "Password field is visible" },
+        { "action": "fill", "selector": "input[name='email']", "value": "admin@example.com", "description": "Enter email" },
+        { "action": "fill", "selector": "input[name='password']", "value": "password", "description": "Enter password" },
+        { "action": "click", "selector": "button[type='submit']", "description": "Click login button" },
+        { "action": "waitForURL", "value": "**/dashboard**", "description": "Redirected to dashboard" },
+        { "action": "assertVisible", "selector": "[data-testid='dashboard']", "description": "Dashboard is visible" }
+      ],
+      "snapshot": {
+        "name": "dashboard-after-login",
+        "fullPage": true
+      }
+    },
+    {
+      "name": "Login fails with invalid credentials",
+      "tags": ["negative", "critical", "ui"],
+      "url": "/login",
+      "steps": [
+        { "action": "fill", "selector": "input[name='email']", "value": "wrong@example.com" },
+        { "action": "fill", "selector": "input[name='password']", "value": "wrongpassword" },
+        { "action": "click", "selector": "button[type='submit']" },
+        { "action": "assertVisible", "selector": ".error-message, [role='alert']", "description": "Error message is shown" },
+        { "action": "assertText", "selector": ".error-message, [role='alert']", "value": "Invalid" }
+      ]
+    },
+    {
+      "name": "Login form shows validation for empty fields",
+      "tags": ["negative", "boundary", "ui"],
+      "url": "/login",
+      "steps": [
+        { "action": "click", "selector": "button[type='submit']", "description": "Submit empty form" },
+        { "action": "assertVisible", "selector": ".error-message, [data-error], .invalid-feedback", "description": "Validation errors shown" }
+      ]
+    },
+    {
+      "name": "Login page renders correctly on mobile",
+      "tags": ["regression", "ui"],
+      "url": "/login",
+      "viewport": { "width": 375, "height": 812 },
+      "steps": [
+        { "action": "assertVisible", "selector": "input[name='email']" },
+        { "action": "assertVisible", "selector": "button[type='submit']" }
+      ],
+      "snapshot": {
+        "name": "login-mobile",
+        "fullPage": true
+      }
+    }
+  ]
+}

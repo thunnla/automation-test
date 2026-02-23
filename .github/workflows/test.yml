@@ -1,0 +1,147 @@
+# ===========================================================
+# Universal Test Engine — GitHub Actions CI
+# ===========================================================
+# Runs on every push/PR → installs, validates schemas, runs
+# API + UI tests across environments, and uploads reports.
+# ===========================================================
+
+name: Test Engine CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+      test_tags:
+        description: 'Test tag filter (e.g. @smoke)'
+        required: false
+        default: ''
+        type: string
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # -------------------------------------------------------
+  # 1. Lint & Schema Validation
+  # -------------------------------------------------------
+  validate:
+    name: Validate Schemas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npx ts-node src/utils/schema-validator.ts
+
+  # -------------------------------------------------------
+  # 2. API Tests
+  # -------------------------------------------------------
+  api-tests:
+    name: API Tests (${{ github.event.inputs.environment || 'staging' }})
+    needs: validate
+    runs-on: ubuntu-latest
+    env:
+      TEST_ENV: ${{ github.event.inputs.environment || 'staging' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npx playwright install --with-deps
+      - name: Run API tests
+        run: |
+          if [ -n "${{ github.event.inputs.test_tags }}" ]; then
+            npx playwright test --project=api --grep "${{ github.event.inputs.test_tags }}"
+          else
+            npx playwright test --project=api
+          fi
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-test-reports
+          path: |
+            reports/
+            test-results/
+          retention-days: 14
+
+  # -------------------------------------------------------
+  # 3. UI Tests (multi-browser)
+  # -------------------------------------------------------
+  ui-tests:
+    name: UI Tests — ${{ matrix.browser }} (${{ github.event.inputs.environment || 'staging' }})
+    needs: validate
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    env:
+      TEST_ENV: ${{ github.event.inputs.environment || 'staging' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Run UI tests
+        run: |
+          if [ -n "${{ github.event.inputs.test_tags }}" ]; then
+            npx playwright test --project=${{ matrix.browser }} --grep "${{ github.event.inputs.test_tags }}"
+          else
+            npx playwright test --project=${{ matrix.browser }}
+          fi
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-reports-${{ matrix.browser }}
+          path: |
+            reports/
+            test-results/
+          retention-days: 14
+
+  # -------------------------------------------------------
+  # 4. Merge & Publish Report
+  # -------------------------------------------------------
+  report:
+    name: Merge Reports
+    if: always()
+    needs: [api-tests, ui-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: all-reports
+      - name: Summary
+        run: |
+          echo "## 📊 Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          for dir in all-reports/*/; do
+            name=$(basename "$dir")
+            echo "### $name" >> $GITHUB_STEP_SUMMARY
+            if [ -f "$dir/reports/summary.json" ]; then
+              cat "$dir/reports/summary.json" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo "" >> $GITHUB_STEP_SUMMARY
+          done

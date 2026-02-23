@@ -1,0 +1,76 @@
+{
+  "suite": "Products API — Public Endpoints",
+  "tags": ["smoke", "regression", "api"],
+  "baseEndpoint": "/products",
+  "tests": [
+    {
+      "name": "GET /products — list all products",
+      "tags": ["smoke", "api"],
+      "method": "GET",
+      "endpoint": "",
+      "expect": {
+        "status": 200,
+        "bodySchema": {
+          "type": "object",
+          "required": ["data"],
+          "properties": {
+            "data": {
+              "type": "array"
+            }
+          }
+        },
+        "responseTime": 5000
+      }
+    },
+    {
+      "name": "GET /products?search=widget — search products",
+      "tags": ["regression", "api"],
+      "method": "GET",
+      "endpoint": "",
+      "query": { "search": "widget" },
+      "expect": {
+        "status": 200,
+        "bodyPath": [
+          { "path": "data", "type": "object" }
+        ]
+      }
+    },
+    {
+      "name": "GET /products/:id — single product",
+      "tags": ["smoke", "api"],
+      "method": "GET",
+      "endpoint": "/1",
+      "expect": {
+        "status": 200,
+        "bodyPath": [
+          { "path": "data.id", "equals": 1 },
+          { "path": "data.name", "type": "string" },
+          { "path": "data.price", "type": "number" }
+        ]
+      }
+    },
+    {
+      "name": "GET /products — pagination with query params",
+      "tags": ["regression", "api"],
+      "method": "GET",
+      "endpoint": "",
+      "query": { "page": "2", "per_page": "5" },
+      "expect": {
+        "status": 200,
+        "bodyPath": [
+          { "path": "meta.current_page", "equals": 2 },
+          { "path": "data", "maxLength": 5 }
+        ]
+      }
+    },
+    {
+      "name": "GET /products/invalid-id — returns 404",
+      "tags": ["negative", "api"],
+      "method": "GET",
+      "endpoint": "/abc",
+      "expect": {
+        "status": 404
+      }
+    }
+  ]
+}

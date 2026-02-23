@@ -1,0 +1,39 @@
+{
+  "suite": "Homepage — Core UI Checks",
+  "tags": ["smoke", "regression", "ui"],
+  "tests": [
+    {
+      "name": "Homepage loads and shows hero section",
+      "tags": ["smoke", "ui"],
+      "url": "/",
+      "steps": [
+        { "action": "assertTitle", "value": ".*", "description": "Page has a title" },
+        { "action": "assertVisible", "selector": "nav, header", "description": "Navigation is visible" },
+        { "action": "assertVisible", "selector": "main, [role='main'], .hero, #app", "description": "Main content is visible" }
+      ],
+      "snapshot": {
+        "name": "homepage-full",
+        "fullPage": true
+      }
+    },
+    {
+      "name": "Navigation links are clickable",
+      "tags": ["regression", "ui"],
+      "url": "/",
+      "steps": [
+        { "action": "assertVisible", "selector": "nav a, header a", "description": "Nav links exist" },
+        { "action": "click", "selector": "nav a:first-child, header a:first-child", "description": "Click first nav link" },
+        { "action": "wait", "value": 1000 }
+      ]
+    },
+    {
+      "name": "Footer is present",
+      "tags": ["regression", "ui"],
+      "url": "/",
+      "steps": [
+        { "action": "scroll", "selector": "footer", "description": "Scroll to footer" },
+        { "action": "assertVisible", "selector": "footer", "description": "Footer is visible" }
+      ]
+    }
+  ]
+}

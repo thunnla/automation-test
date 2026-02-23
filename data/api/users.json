@@ -1,0 +1,164 @@
+{
+  "suite": "Users API — CRUD Operations",
+  "tags": ["smoke", "regression", "api"],
+  "baseEndpoint": "/users",
+  "setup": {
+    "method": "POST",
+    "endpoint": "/auth/login",
+    "body": {
+      "email": "admin@example.com",
+      "password": "password"
+    },
+    "extractToken": {
+      "fromPath": "data.token",
+      "as": "token"
+    }
+  },
+  "tests": [
+    {
+      "name": "GET /users — list all users",
+      "tags": ["smoke", "api"],
+      "method": "GET",
+      "endpoint": "",
+      "auth": "{{token}}",
+      "expect": {
+        "status": 200,
+        "bodySchema": {
+          "type": "object",
+          "required": ["data"],
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["id", "name", "email"],
+                "properties": {
+                  "id": { "type": "number" },
+                  "name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" }
+                }
+              }
+            }
+          }
+        },
+        "bodyPath": [
+          { "path": "data", "type": "object" }
+        ],
+        "responseTime": 3000
+      }
+    },
+    {
+      "name": "POST /users — create a new user",
+      "tags": ["smoke", "critical", "api"],
+      "method": "POST",
+      "endpoint": "",
+      "auth": "{{token}}",
+      "body": {
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "password": "securePass123",
+        "role": "user"
+      },
+      "expect": {
+        "status": 201,
+        "bodyContains": {
+          "name": "John Doe",
+          "email": "john.doe@example.com"
+        },
+        "bodyPath": [
+          { "path": "data.id", "type": "number" },
+          { "path": "data.name", "equals": "John Doe" },
+          { "path": "data.email", "regex": "^[\\w.+-]+@[\\w-]+\\.[\\w.]+$" }
+        ]
+      }
+    },
+    {
+      "name": "GET /users/:id — get single user",
+      "tags": ["regression", "api"],
+      "method": "GET",
+      "endpoint": "/1",
+      "auth": "{{token}}",
+      "expect": {
+        "status": 200,
+        "bodyPath": [
+          { "path": "data.id", "equals": 1 },
+          { "path": "data.name", "type": "string", "minLength": 1 },
+          { "path": "data.email", "type": "string" }
+        ]
+      }
+    },
+    {
+      "name": "PUT /users/:id — update user",
+      "tags": ["regression", "api"],
+      "method": "PUT",
+      "endpoint": "/1",
+      "auth": "{{token}}",
+      "body": {
+        "name": "John Updated"
+      },
+      "expect": {
+        "status": 200,
+        "bodyContains": { "name": "John Updated" }
+      }
+    },
+    {
+      "name": "DELETE /users/:id — delete user",
+      "tags": ["critical", "api"],
+      "method": "DELETE",
+      "endpoint": "/999",
+      "auth": "{{token}}",
+      "expect": {
+        "statusRange": { "min": 200, "max": 204 }
+      }
+    },
+    {
+      "name": "GET /users/:id — non-existent user returns 404",
+      "tags": ["negative", "api"],
+      "method": "GET",
+      "endpoint": "/99999",
+      "auth": "{{token}}",
+      "expect": {
+        "status": 404,
+        "bodyContains": { "message": "Not Found" }
+      }
+    },
+    {
+      "name": "POST /users — missing required fields returns 422",
+      "tags": ["negative", "api"],
+      "method": "POST",
+      "endpoint": "",
+      "auth": "{{token}}",
+      "body": {},
+      "expect": {
+        "status": 422,
+        "bodyPath": [
+          { "path": "errors", "type": "object" }
+        ]
+      }
+    },
+    {
+      "name": "POST /users — duplicate email returns 422",
+      "tags": ["negative", "boundary", "api"],
+      "method": "POST",
+      "endpoint": "",
+      "auth": "{{token}}",
+      "body": {
+        "name": "Duplicate Test",
+        "email": "admin@example.com",
+        "password": "password123"
+      },
+      "expect": {
+        "status": 422
+      }
+    },
+    {
+      "name": "GET /users — unauthorized without token returns 401",
+      "tags": ["negative", "critical", "api"],
+      "method": "GET",
+      "endpoint": "",
+      "expect": {
+        "status": 401
+      }
+    }
+  ]
+}

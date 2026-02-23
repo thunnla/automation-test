@@ -1,0 +1,43 @@
+{
+  "name": "universal-test-engine",
+  "version": "1.0.0",
+  "description": "Universal QA Test Engine — reusable across any project and framework",
+  "private": true,
+  "scripts": {
+    "test": "npx playwright test",
+    "test:api": "npx playwright test --grep @api",
+    "test:ui": "npx playwright test --grep @ui",
+    "test:smoke": "npx playwright test --grep @smoke",
+    "test:regression": "npx playwright test --grep @regression",
+    "test:critical": "npx playwright test --grep @critical",
+    "test:negative": "npx playwright test --grep @negative",
+    "test:boundary": "npx playwright test --grep @boundary",
+    "test:dev": "cross-env TEST_ENV=dev npx playwright test",
+    "test:staging": "cross-env TEST_ENV=staging npx playwright test",
+    "test:prod": "cross-env TEST_ENV=production npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:debug": "npx playwright test --debug",
+    "test:report": "npx playwright show-report reports/html",
+    "test:trace": "npx playwright show-trace",
+    "lint": "eslint src/ tests/",
+    "format": "prettier --write .",
+    "validate:schemas": "ts-node src/utils/schema-validator.ts",
+    "install:browsers": "npx playwright install --with-deps"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.45.0",
+    "ajv": "^8.17.0",
+    "ajv-formats": "^3.0.1",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "typescript": "^5.5.0",
+    "prettier": "^3.3.0",
+    "eslint": "^9.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
