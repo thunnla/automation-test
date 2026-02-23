@@ -1,0 +1,49 @@
+{
+  "suite": "JSONPlaceholder — Public API",
+  "tags": ["smoke", "api", "public"],
+  "baseEndpoint": "",
+  "tests": [
+    {
+      "name": "GET /posts — list posts",
+      "tags": ["smoke", "public", "api"],
+      "method": "GET",
+      "endpoint": "/posts",
+      "expect": {
+        "status": 200,
+        "bodySchema": {
+          "type": "array",
+          "minItems": 1
+        }
+      }
+    },
+    {
+      "name": "GET /posts/1 — single post",
+      "tags": ["regression", "public", "api"],
+      "method": "GET",
+      "endpoint": "/posts/1",
+      "expect": {
+        "status": 200,
+        "bodyPath": [
+          { "path": "id", "equals": 1 },
+          { "path": "userId", "type": "number" },
+          { "path": "title", "type": "string" }
+        ]
+      }
+    },
+    {
+      "name": "POST /posts — create post (public test)",
+      "tags": ["regression", "public", "api"],
+      "method": "POST",
+      "endpoint": "/posts",
+      "body": {
+        "title": "foo",
+        "body": "bar",
+        "userId": 1
+      },
+      "expect": {
+        "status": 201,
+        "bodyContains": { "title": "foo", "body": "bar", "userId": 1 }
+      }
+    }
+  ]
+}

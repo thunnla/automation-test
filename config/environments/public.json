@@ -1,0 +1,20 @@
+{
+  "name": "public",
+  "apiBaseUrl": "https://jsonplaceholder.typicode.com",
+  "uiBaseUrl": "",
+  "timeout": 30000,
+  "retries": 0,
+  "auth": {
+    "strategy": "none"
+  },
+  "headers": {
+    "Accept": "application/json",
+    "Content-Type": "application/json"
+  },
+  "features": {
+    "screenshots": false,
+    "video": "off",
+    "trace": "off",
+    "snapshots": false
+  }
+}

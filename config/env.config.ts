@@ -47,7 +47,7 @@ export interface EnvironmentConfig {
 // Loader
 // ---------------------------------------------------------------------------
 
-const ROOT = path.resolve(__dirname, '..', '..');
+const ROOT = path.resolve(__dirname, '..');
 
 // Load .env once
 dotenv.config({ path: path.join(ROOT, '.env') });
